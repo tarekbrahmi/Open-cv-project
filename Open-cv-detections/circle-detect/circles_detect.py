@@ -40,5 +40,4 @@ text = "Number of Circular shape: " + str(len(keypoints))
 cv2.putText(blobs, text, (20, 550),
             cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
 
-# Show blobs
 cv2.imwrite("./FiltredCircles.jpg", blobs)
