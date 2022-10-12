@@ -20,3 +20,4 @@ for i in corners:
 	cv2.circle(img, (x, y), 3, 255, -1)
 
 plt.imshow(img), plt.show()
+cv2.imwrite('./corner-detect.jpg',img)
