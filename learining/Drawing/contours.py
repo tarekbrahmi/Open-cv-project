@@ -1,6 +1,6 @@
 import cv2
 
-image = cv2.imread('contours.jpg')
+image = cv2.imread('contours2.jpg')
 
 
 # Grayscale
