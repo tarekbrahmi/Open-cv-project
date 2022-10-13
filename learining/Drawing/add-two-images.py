@@ -10,5 +10,11 @@ image2 = cv2.imread("./image2.jpg")
 result = cv2.addWeighted(src1=image1, alpha=1,
                          src2=image2, beta=0.1, gamma=0)
 
+# cv2.subtract is applied over the
+# image inputs with applied parameters
+sub = cv2.subtract(image1, image2)
+
 cv2.imshow("Concatination", result)
+cv2.imshow("substruction", sub)
 cv2.waitKey(0)
+cv2.destroyAllWindows()
