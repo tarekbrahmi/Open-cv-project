@@ -25,6 +25,8 @@ def gray_scale_image(img):
             img[c, r] = sum(img[c, r])*0.33
     return img
 
+# cv2.cvtColor() method is used to convert an image from one color space to another. 
+# There are more than 150 color-space conversion methods available in OpenCV.
 image_1=cv2.cvtColor(image_copy,cv2.COLOR_BGR2GRAY)
 cv2.imshow("Method 1", image_1)
 cv2.waitKey(0)
