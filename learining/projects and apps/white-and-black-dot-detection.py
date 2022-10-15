@@ -1,36 +1,42 @@
 import cv2
+import numpy as np
 path = "black-white.jpg"
 
-# reading the image in grayscale mode
-gray = cv2.imread(path, 0)
-image = cv2.imread(path)
-# threshold
-th, threshed_white = cv2.threshold(gray, 100, 255,
-                                   cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+params = cv2.SimpleBlobDetector_Params()
 
-th, threshed_black = cv2.threshold(gray, 100, 255,
-                                   cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
-# findcontours
-cnts_white = cv2.findContours(threshed_white, cv2.RETR_LIST,
-                              cv2.CHAIN_APPROX_SIMPLE)[-2]
-cnts_black = cv2.findContours(threshed_black, cv2.RETR_LIST,
-                              cv2.CHAIN_APPROX_SIMPLE)[-2]
-# filter by area .. black and white dots have same area
-s1 = 1
-s2 = 3
-xcnts_white = []
-xcnts_black = []
+params.filterByArea = True
+params.minArea = 100
 
-cv2.drawContours(image=image, contours=cnts_white,
-                contourIdx=-1, color=(0, 255, 0), thickness=3)
-cv2.imshow('Contours', image)
+params.filterByCircularity = True
+params.minCircularity = 0.9
+
+params.filterByConvexity = True
+params.minConvexity = 0.2
+
+params.filterByInertia = True
+params.minInertiaRatio = 0.01
+
+detector = cv2.SimpleBlobDetector_create(params)
+
+image = cv2.imread(path, 0)
+
+black_keypoints = detector.detect(image)
+white_keypoints = detector.detect(cv2.bitwise_not(src=image))
+blank = np.zeros((1, 1))
+blobs = cv2.drawKeypoints(image, white_keypoints, blank, (0, 0, 255),
+                          cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+
+text = "white shape: " + str(len(white_keypoints))
+cv2.putText(blobs, text, (20, 50),
+            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+
+blobs = cv2.drawKeypoints(blobs, black_keypoints, blank, (0, 255, 0),
+                          cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+text_ = "black shape: " + str(len(black_keypoints))
+cv2.putText(blobs, text_, (20, 80),
+            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1)
+
+cv2.imshow("results", blobs)
 cv2.waitKey(0)
-cv2.destroyAllWindows()
-for cnt in cnts_white:
-    if s1 < cv2.contourArea(cnt) and cv2.contourArea(cnt)  < s2:
-        xcnts_white.append(cnt)
-for cnt in cnts_black:
-    if s1 < cv2.contourArea(cnt) and cv2.contourArea(cnt) < s2:
-        xcnts_black.append(cnt)
-# printing output
-print("\n(White:%d Black:%d) " % (len(cnts_white), len(cnts_black)))
