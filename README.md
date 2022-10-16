@@ -4,6 +4,15 @@
 
 In this repository we dive in more fields in computer vision and some AI/ML libraries to apply many algorithms in our data.
 
+##### Content of this repository
+
+> * Video processing with OpenCV ,Face Detection,Object and movement detection.
+> * Shape detection and counting object on real time via default camera.
+> * Drawing different type of contours (Circle,rectangle,Triangle.. ) in image or video (real time).
+> * Applying algorithms provided by OpenCv for image processing (Segmentation,Morphological algorithms...).
+> * Applying algorithms provided by Sklearn to preform many actions (Emotion Detection,)
+> * ...
+
 ##### Requirements of this repository
 
 > * *OpenCV* : Provides a real-time optimized Computer Vision library, tools, and hardware. It also supports model execution for Machine Learning (ML).
@@ -14,12 +23,3 @@ In this repository we dive in more fields in computer vision and some AI/ML libr
 > * *dlib* : A toolkit for making real world machine learning and data analysis applications.
 > * *scipy* : Provides algorithms for optimization, integration, interpolation, eigenvalue problems, algebraic equations, differential equations, statistics and many others algorithms.
 > * *imutils* : A series of convenience functions to make basic image processing functions such as translation, rotation, resizing, skeletonization, displaying Matplotlib.
-
-##### Content of this repository:
-
-> * Video processing with OpenCV ,Face Detection,Object and movement detection.
-> * Shape detection and counting object on real time via default camera.
-> * Drawing different type of contours (Circle,rectangle,Triangle.. ) in image or video (real time).
-> * Applying algorithms provided by OpenCv for image processing (Segmentation,Morphological algorithms...).
-> * Applying algorithms provided by Sklearn to preform many actions (Emotion Detection,)
-> *
