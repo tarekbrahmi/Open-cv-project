@@ -22,7 +22,7 @@ def click_event(event, x, y, flags, params):
         cv2.imshow('controle-mouse-event', img)
 
 
-if __name__ == "__main__":
+
     img = cv2.imread('image-test.png', 1)
     cv2.imshow('controle-mouse-event', img)
     cv2.setMouseCallback('controle-mouse-event', click_event)

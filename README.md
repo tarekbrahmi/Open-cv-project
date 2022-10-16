@@ -11,7 +11,7 @@ In this repository we dive in more fields in computer vision and some AI/ML libr
 > * Drawing different type of contours (Circle,rectangle,Triangle.. ) in image or video (real time).
 > * Applying algorithms provided by OpenCv for image processing (Segmentation,Morphological algorithms...).
 > * Applying algorithms provided by Sklearn to preform many actions (Emotion Detection,)
-> * ...
+> * Inspect mouse events to manipulate image (Live Drawing,)
 
 ##### Requirements of this repository
 
