@@ -2,7 +2,7 @@
 
 > What is computer vision?  **Computer vision is a field of AI that trains computers to capture and interpret information from image and video data** . By applying machine learning (ML) models to images, computers can classify objects and respond—like unlocking your smartphone when it recognizes your face.
 
-In this repository we dive in more fields in computer visonion and some AI/ML libraries to apply many algorithms in our data.
+In this repository we dive in more fields in computer vision and some AI/ML libraries to apply many algorithms in our data.
 
 ##### Requirements of this repository
 
