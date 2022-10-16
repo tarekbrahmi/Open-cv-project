@@ -12,7 +12,7 @@ colors = [[51, 153, 255],
 
 color = random.choice(colors)
 
-def draw_event(event, x, y):
+def draw_event(event, x, y,flags,params):
     global save, imgResult, color
     if event == cv2.EVENT_LBUTTONDOWN and ~save:
         save = True
