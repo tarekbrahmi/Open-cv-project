@@ -3,9 +3,111 @@ import numpy as np
 from skimage.filters import threshold_local
 import imutils
 from skimage import measure
-path = "./test_videos/blurred.jpg"
+path = "./test_videos/test_image.png"
 fixed_width = 400
 image = cv2.imread(path)
+
+
+def sort_cont(character_contours):
+    """
+    To sort contours from left to right
+    """
+    i = 0
+    boundingBoxes = [cv2.boundingRect(c) for c in character_contours]
+    (character_contours, boundingBoxes) = zip(*sorted(zip(character_contours, boundingBoxes),
+                                                      key=lambda b: b[1][i], reverse=False))
+    return character_contours
+
+
+def segment_chars(plate_img, fixed_width):
+    """
+    extract Value channel from the HSV format of image and apply adaptive thresholding
+    to reveal the characters on the license plate
+    """
+    V = cv2.split(cv2.cvtColor(plate_img, cv2.COLOR_BGR2HSV))[2]
+
+    T = threshold_local(V, 29, offset=15, method='gaussian')
+
+    thresh = (V > T).astype('uint8') * 255
+
+    thresh = cv2.bitwise_not(thresh)
+
+    # resize the license plate region to a canoncial size
+    plate_img = imutils.resize(plate_img, width=fixed_width)
+    thresh = imutils.resize(thresh, width=fixed_width)
+    bgr_thresh = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
+
+    # perform a connected components analysis and initialize the mask to store the locations
+    # of the character candidates
+    labels = measure.label(thresh, 8, 0)
+
+    charCandidates = np.zeros(thresh.shape, dtype='uint8')
+
+    # loop over the unique components
+    characters = []
+    for label in np.unique(labels):
+        # if this is the background label, ignore it
+        if label == 0:
+            continue
+        # otherwise, construct the label mask to display only connected components for the
+        # current label, then find contours in the label mask
+        labelMask = np.zeros(thresh.shape, dtype='uint8')
+        labelMask[labels == label] = 255
+
+        cnts = cv2.findContours(
+            labelMask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = cnts[0]
+
+        # ensure at least one contour was found in the mask
+        if len(cnts) > 0:
+
+            # grab the largest contour which corresponds to the component in the mask, then
+            # grab the bounding box for the contour
+            c = max(cnts, key=cv2.contourArea)
+            # c = max([area for area in cv2.contourArea(cnts) if cnts !=0 ])
+            (boxX, boxY, boxW, boxH) = cv2.boundingRect(c)
+
+            # compute the aspect ratio, solodity, and height ration for the component
+            aspectRatio = boxW / float(boxH)
+            solidity = cv2.contourArea(c) / float(boxW * boxH)
+            heightRatio = boxH / float(plate_img.shape[0])
+
+            # determine if the aspect ratio, solidity, and height of the contour pass
+            # the rules tests
+            keepAspectRatio = aspectRatio < 1.0
+            keepSolidity = solidity > 0.15
+            keepHeight = heightRatio > 0.5 and heightRatio < 0.95
+
+            # check to see if the component passes all the tests
+            if keepAspectRatio and keepSolidity and keepHeight and boxW > 14:
+                # compute the convex hull of the contour and draw it on the character
+                # candidates mask
+                hull = cv2.convexHull(c)
+
+                cv2.drawContours(charCandidates, [hull], -1, 255, -1)
+
+    contours, hier = cv2.findContours(
+        charCandidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if contours:
+        contours = sort_cont(contours)
+        addPixel = 4  # value to be added to each dimension of the character
+        for c in contours:
+            (x, y, w, h) = cv2.boundingRect(c)
+            if y > addPixel:
+                y = y - addPixel
+            else:
+                y = 0
+            if x > addPixel:
+                x = x - addPixel
+            else:
+                x = 0
+            temp = bgr_thresh[y:y + h +
+                              (addPixel * 2), x:x + w + (addPixel * 2)]
+
+            characters.append(temp)
+        return characters
+    else:
+        return None
 
 
 def find_and_drow_contours(image):
@@ -56,7 +158,7 @@ class PlateFinder:
             image=preproccessed_image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE)
         return contours
 
-    def preValidateRatioAndArea(self, area, width, height):
+    def preValidateRatio(self, area, width, height):
         """
         validate plate side ratios and area
         """
@@ -79,7 +181,26 @@ class PlateFinder:
         if rect_angle < 70 or rect_angle > 95:
             return False
         area = width * height
-        return self.preValidateRatioAndArea(area=area, width=width, height=height)
+        return self.preValidateRatio(area=area, width=width, height=height)
+
+    def clean_up_plate(self, possible_plate):
+
+        gray = cv2.cvtColor(possible_plate, cv2.COLOR_BGR2GRAY)
+        thresh = cv2.adaptiveThreshold(
+            gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        contours, _ = cv2.findContours(
+            thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        if len(contours):
+            areas = [cv2.contourArea(c) for c in contours]
+            # index of the largest contour in the area array
+            max_index = np.argmax(areas)
+            max_cnt = contours[max_index]
+            max_cntArea = areas[max_index]
+            x, y, w, h = cv2.boundingRect(max_cnt)
+            if self.preValidateRatio(area=max_cntArea, width=possible_plate.shape[1], height=possible_plate.shape[0]):
+                return True, [x, y, w, h]
+            else:
+                False, None
 
     def check_plate(self, image_input, contour):
         """
@@ -89,11 +210,15 @@ class PlateFinder:
         possible_rect = cv2.minAreaRect(contour)
         if self.validateRatioAndArea(rect=possible_rect):
             x, y, w, h = cv2.boundingRect(contour)
-            # if int(x) > 316 and int(y) > 240:
-            #     cv2.circle(img= image_input,center= (int(x), int(
-            #         y)), radius=1,color=(0, 0, 255), lineType=cv2.FILLED)
-            after_validation_img = image_input[y:y + h, x:x + w]
-            cv2.imwrite('platex%dy%dh%dw%d.png' % (x, y,h,w), after_validation_img)
+            possible_plate = image_input[y:y + h, x:x + w]
+            cv2.imwrite('possible_platex%dy%d.png'%(x,y),possible_plate)
+            plate_is_founded, coordinates = self.clean_up_plate(
+                possible_plate=possible_plate)
+            if plate_is_founded:
+                chars_in_plate = segment_chars(
+                    fixed_width=fixed_width, plate_img=possible_plate)
+                if chars_in_plate != None and len(chars_in_plate) == 7:
+                    return possible_plate, coordinates, chars_in_plate
 
         return None, None, None
 
@@ -106,12 +231,16 @@ class PlateFinder:
         all_images_contours = self.getContours(
             preproccessed_image=self.preprocessed_image)
         for contour in all_images_contours:
-            self.check_plate(image_input=image_input, contour=contour)
+            possible_plate, coordinates, chars_in_plate = self.check_plate(
+                image_input=image_input, contour=contour)
+            if chars_in_plate:
+                cv2.drawContours(image_input, [contour], 0, (0, 255, 0), 3)
+                cv2.imwrite('platefounded.png', possible_plate)
 
 
 plateFinder = PlateFinder()
 plateFinder.find_possible_plates(image_input=image)
-# find_and_drow_contours(image=image)  # for testing
+find_and_drow_contours(image=image)  # for testing
 cv2.imshow("Car license plate finder", cv2.resize(image, (960, 540)))
 
 cv2.waitKey(0)
