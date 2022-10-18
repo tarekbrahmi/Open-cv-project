@@ -10,15 +10,13 @@ image = cv2.imread(path)
 
 def find_and_drow_contours(image):
     # Grayscale
-    # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # Find Canny edges
-    edged = cv2.Canny(image, 30, 200)
+    edged = cv2.Canny(gray, 30, 200)
     contours, _ = cv2.findContours(
         edged, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE)
     cv2.drawContours(image=image, contours=contours,
                      contourIdx=-1, color=(0, 255, 0), thickness=1)
-    # cv2.imshow('Image PreProcessing', edged)    
 
 
 class PlateFinder:
@@ -53,9 +51,23 @@ class PlateFinder:
         # cv2.imshow('Image PreProcessing', cv2.resize(image_copy, (960, 540)))
         return image_copy
 
+    def getContours(self, preproccessed_image):
+        contours, _ = cv2.findContours(
+            image=preproccessed_image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE)
+        return contours
+
+    def find_possible_plates(self, image_input):
+        """ 
+        1. Now find the minimum area rectangle enclosed by each of the contours and validate their side ratios and area. We have defined the minimum and maximum area of the plate as 4500 and 30000 respectively.
+        2.Now find the contours in the validated region and validate the side ratios and area of the bounding rectangle of the largest contour in that region. After validating you will get a perfect contour of a license plate. Now extract that contour from the original image
+        """
+        self.preprocessed_image = self.preprocess_image(image_input)
+        find_and_drow_contours(image=image_input)  # for testing
+
 
 plateFinder = PlateFinder()
-plateFinder.preprocess_image(image_input=image)
+# plateFinder.find_possible_plates(image_input=cv2.resize(image, (960, 540)))
+find_and_drow_contours(image=image)  # for testing
 cv2.imshow("Car license plate finder", cv2.resize(image, (960, 540)))
 
 cv2.waitKey(0)
