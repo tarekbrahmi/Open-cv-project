@@ -3,7 +3,8 @@ import numpy as np
 from skimage.filters import threshold_local
 import imutils
 from skimage import measure
-path = "./test_videos/test_image.png"
+path = "./test_videos/test1.mp4"
+cap = cv2.VideoCapture(path)
 fixed_width = 400
 image = cv2.imread(path)
 
@@ -235,13 +236,14 @@ class PlateFinder:
                 image_input=image_input, contour=contour)
             if chars_in_plate:
                 cv2.drawContours(image_input, [contour], 0, (0, 255, 0), 3)
-                cv2.imwrite('platefounded.png', possible_plate)
-
 
 plateFinder = PlateFinder()
-plateFinder.find_possible_plates(image_input=image)
-find_and_drow_contours(image=image)  # for testing
-cv2.imshow("Car license plate finder", cv2.resize(image, (960, 540)))
-
-cv2.waitKey(0)
+while True:
+    # reads frames from a video
+    ret, frames = cap.read()
+    plateFinder.find_possible_plates(image_input=frames)
+    cv2.imshow("Car license plate finder", cv2.resize(frames, (960, 540)))
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord("x"):
+        break
 cv2.destroyAllWindows()
