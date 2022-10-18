@@ -228,15 +228,18 @@ class PlateFinder:
         1. Now find the minimum area rectangle enclosed by each of the contours and validate their side ratios and area. We have defined the minimum and maximum area of the plate as 4500 and 30000 respectively.
         2.Now find the contours in the validated region and validate the side ratios and area of the bounding rectangle of the largest contour in that region. After validating you will get a perfect contour of a license plate. Now extract that contour from the original image
         """
+        plates=[]
         self.preprocessed_image = self.preprocess_image(image_input)
         all_images_contours = self.getContours(
             preproccessed_image=self.preprocessed_image)
         for contour in all_images_contours:
             possible_plate, coordinates, chars_in_plate = self.check_plate(
                 image_input=image_input, contour=contour)
+            
             if chars_in_plate:
-                cv2.drawContours(image_input, [contour], 0, (0, 255, 0), 3)
-
+                plates.append(possible_plate)
+            #     cv2.drawContours(image_input, [contour], 0, (0, 255, 0), 3)
+        return plates
 plateFinder = PlateFinder()
 while True:
     # reads frames from a video
