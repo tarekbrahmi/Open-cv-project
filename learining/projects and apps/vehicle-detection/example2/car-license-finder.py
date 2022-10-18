@@ -56,18 +56,62 @@ class PlateFinder:
             image=preproccessed_image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE)
         return contours
 
+    def preValidateRatioAndArea(self, area, width, height):
+        """
+        validate plate side ratios and area
+        """
+        min_ratio = 3.5
+        max_ratio = 5
+        ratio = float(width)/float(height)
+        if ratio < 1:
+            ratio = 1/ratio
+        return (ratio > min_ratio or ratio < max_ratio) or (area > self.min_area or area < self.max_area)
+
+    def validateRatioAndArea(self, rect):
+        """
+        prepare possible plate to be preproccessed
+        """
+        (x, y), (width, height), rect_angle = rect
+        if (height == 0 or width == 0):
+            return False
+        if (width > height) or width == height:
+            return False
+        if rect_angle < 70 or rect_angle > 95:
+            return False
+        area = width * height
+        return self.preValidateRatioAndArea(area=area, width=width, height=height)
+
+    def check_plate(self, image_input, contour):
+        """
+            check if contour can be a plate 
+        """
+        # extract possible rectangle
+        possible_rect = cv2.minAreaRect(contour)
+        if self.validateRatioAndArea(rect=possible_rect):
+            x, y, w, h = cv2.boundingRect(contour)
+            # if int(x) > 316 and int(y) > 240:
+            #     cv2.circle(img= image_input,center= (int(x), int(
+            #         y)), radius=1,color=(0, 0, 255), lineType=cv2.FILLED)
+            after_validation_img = image_input[y:y + h, x:x + w]
+            cv2.imwrite('platex%dy%dh%dw%d.png' % (x, y,h,w), after_validation_img)
+
+        return None, None, None
+
     def find_possible_plates(self, image_input):
         """ 
         1. Now find the minimum area rectangle enclosed by each of the contours and validate their side ratios and area. We have defined the minimum and maximum area of the plate as 4500 and 30000 respectively.
         2.Now find the contours in the validated region and validate the side ratios and area of the bounding rectangle of the largest contour in that region. After validating you will get a perfect contour of a license plate. Now extract that contour from the original image
         """
         self.preprocessed_image = self.preprocess_image(image_input)
-        find_and_drow_contours(image=image_input)  # for testing
+        all_images_contours = self.getContours(
+            preproccessed_image=self.preprocessed_image)
+        for contour in all_images_contours:
+            self.check_plate(image_input=image_input, contour=contour)
 
 
 plateFinder = PlateFinder()
-# plateFinder.find_possible_plates(image_input=cv2.resize(image, (960, 540)))
-find_and_drow_contours(image=image)  # for testing
+plateFinder.find_possible_plates(image_input=image)
+# find_and_drow_contours(image=image)  # for testing
 cv2.imshow("Car license plate finder", cv2.resize(image, (960, 540)))
 
 cv2.waitKey(0)
