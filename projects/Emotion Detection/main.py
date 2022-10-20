@@ -55,6 +55,7 @@ class RealTimeEmotionDetector:
     CLAHE = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
 
     vidCapture = None
+    
 
     def __init__(self, classifier_model: ImageClassifier):
         self.__init_video_capture(camera_idx=0, frame_w=FRAME_WIDTH, frame_h=FRAME_HEIGHT)
