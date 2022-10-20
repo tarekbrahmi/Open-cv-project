@@ -25,7 +25,6 @@ class DST:
 
     def read_frame(self) -> np.ndarray:
         ret, frame = self.vidCapture.read()
-        # frame = cv2.resize(src=frame, dsize=(960, 540))
         return ret, frame
 
     def get_background(self,  size=20):
@@ -44,7 +43,7 @@ class DST:
         median_frame = np.median(frames, axis=0).astype(np.uint8)
         # cv2.imshow("median background", median_frame)
         background = cv2.cvtColor(median_frame, cv2.COLOR_BGR2GRAY)
-        # background = cv2.resize(src=background, dsize=(960, 540))
+        background = cv2.resize(src=background, dsize=(960, 540))
         return background
 
     def execute(self, wait_key_delay=33, quit_key='q'):
@@ -52,6 +51,7 @@ class DST:
         while cv2.waitKey(delay=wait_key_delay) != ord(quit_key) and self.vidCapture.isOpened():
             ret, frame = self.read_frame()
             if ret == True:
+                frame = cv2.resize(src=frame, dsize=(960, 540))
                 frame_cnt += 1
                 orig_frame = frame.copy()
 
