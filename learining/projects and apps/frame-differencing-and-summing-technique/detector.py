@@ -13,7 +13,7 @@ cap = cv2.VideoCapture(args['input'])
 # get the video frame height and width
 frame_width = int(cap.get(3))
 frame_height = int(cap.get(4))
-save_name = f"outputs/{args['input'].split('/')[-1]}"
+save_name = f"./outputs/{args['input'].split('/')[-1]}"
 # define codec and create VideoWriter object
 out = cv2.VideoWriter(
     save_name,
@@ -53,8 +53,8 @@ while (cap.isOpened()):
             # find the contours around the white segmented areas
             contours, hierarchy = cv2.findContours(sum_frames, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             # draw the contours, not strictly necessary
-            for i, cnt in enumerate(contours):
-                cv2.drawContours(frame, contours, i, (0, 0, 255), 3)
+            # for i, cnt in enumerate(contours):
+            #     cv2.drawContours(orig_frame, contours, i, (0, 0, 255), 3)
             for contour in contours:
                 # continue through the loop if contour area is less than 500...
                 # ... helps in removing noise detection
