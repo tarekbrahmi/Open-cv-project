@@ -29,6 +29,9 @@ class DST:
         return ret, frame
 
     def get_background(self,  size=20):
+        """
+        After calculation, this function will return the background model of the video
+        """
         cap = self.vidCapture
         frame_indices = cap.get(cv2.CAP_PROP_FRAME_COUNT) * \
             np.random.uniform(size=size)
