@@ -10,7 +10,7 @@ FONT = cv2.QT_FONT_NORMAL
 # Frame Width & Height
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 490
-VIDEO_PATH = "./test_videos/test.mp4"
+VIDEO_PATH = "./test_videos/test1.mp4"
 
 
 class RealTimePlateDetector:

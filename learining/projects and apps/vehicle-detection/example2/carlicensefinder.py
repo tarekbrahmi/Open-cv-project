@@ -238,7 +238,7 @@ class PlateFinder:
 
             if chars_in_plate:
                 plates.append(possible_plate)
-                cv2.imwrite("./plates/"+"".join(random.sample('ABCDEFGHIJKLMNOP', 5))+".png", possible_plate)
+                # cv2.imwrite("./plates/"+"".join(random.sample('ABCDEFGHIJKLMNOP', 5))+".png", possible_plate)
                 cv2.drawContours(image_input, [contour], 0, (0, 255, 0), 3)
         return plates
 
