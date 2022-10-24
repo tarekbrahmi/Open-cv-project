@@ -151,7 +151,7 @@ class PlateFinder:
         image_copy = threash.copy()
         # applay closing morphology
         cv2.morphologyEx(
-            src=threash, kernel=self.element_structure, op=cv2.MORPH_CLOSE, dst=image_copy)
+            src=threash, kernel=self.element_structure, op=cv2.MORPH_CLOSE, dts=image_copy)
         # cv2.imshow('Image PreProcessing', cv2.resize(image_copy, (960, 540)))
         return image_copy
 
@@ -214,7 +214,7 @@ class PlateFinder:
             x, y, w, h = cv2.boundingRect(contour)
             possible_plate = image_input[y:y + h, x:x + w]
             plate_is_founded, coordinates = self.clean_up_plate(
-                possible_plate=possible_plate)
+                possible_plate=possible_plate)  # type: ignore
             if plate_is_founded:
                 chars_in_plate = segment_chars(
                     fixed_width=fixed_width, plate_img=possible_plate)
