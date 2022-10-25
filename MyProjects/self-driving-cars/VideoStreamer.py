@@ -35,16 +35,21 @@ class RealTimeVideoStreamer:
         ret, frame = self.vidCapture.read()
         return ret, frame
 
-    def execute(self, wait_key_delay=33, quit_key='q', frame_period_s=0.75):
+    def execute(self, wait_key_delay=33, quit_key='q', frame_period_s=0.2, applay_delay=True):
         frame_cnt = 0
         while cv2.waitKey(delay=wait_key_delay) != ord(quit_key) and self.vidCapture.isOpened():
             ret, frame = self.read_frame()
             if ret == True:
                 frame = cv2.resize(src=frame, dsize=(960, 540))
-                frame_cnt += 1
-                if frame_cnt % (frame_period_s * 10) == 0:
-                    # here we can applay plate finder
-                    frame_cnt = 0
+                if applay_delay:
+                    frame_cnt += 1
+                    if frame_cnt % (frame_period_s * 10) == 0:
+                        # here we can applay plate finder
+                        frame_cnt = 0
+                        frame = self.lane_detector.laneFinder(frame=frame)
+                        print('we can execute lane detector with delay')
+                else:
+                    frame = self.lane_detector.laneFinder(frame=frame)
                     print('we can execute lane detector')
                 cv2.imshow('Lane Detection', frame)
         cv2.destroyAllWindows()
