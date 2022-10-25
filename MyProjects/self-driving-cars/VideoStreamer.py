@@ -47,11 +47,11 @@ class RealTimeVideoStreamer:
                 if applay_delay:
                     frame_cnt += 1
                     if frame_cnt % (frame_period_s * 10) == 0:
-                        # here we can applay plate finder
                         frame_cnt = 0
-                        frame = self.lane_detector.laneFinder(
-                            frame=frame, original=original_image)
+                        # here we can applay lane finder
                         print('we can execute lane detector with delay')
+                        self.lane_detector.laneFinder(
+                            frame=frame, original=original_image)
                 else:
                     print('we can execute lane detector')
                     self.lane_detector.laneFinder(

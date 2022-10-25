@@ -36,7 +36,7 @@ class LaneDetector:
         mask = np.zeros_like(frame)
         # polygone point (region of intrest)
         vertices = np.array(
-            [[(0, 539), (350, 270), (461, 231), (627, 256), (959, 539)]], dtype=np.int32)
+            [[(0, mask.shape[1]), (350, 270), (461, 231), (627, 256), (mask.shape[0], mask.shape[1])]], dtype=np.int32)
         cv2.circle(img=original, center=(0, 539), radius=1,
                    color=(0, 0, 255), thickness=2)
         cv2.circle(img=original, center=(350, 270),
