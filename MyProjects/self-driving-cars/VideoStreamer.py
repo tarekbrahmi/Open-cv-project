@@ -40,7 +40,10 @@ class RealTimeVideoStreamer:
         while cv2.waitKey(delay=wait_key_delay) != ord(quit_key) and self.vidCapture.isOpened():
             ret, frame = self.read_frame()
             if ret == True:
+                original_image = frame.copy()
                 frame = cv2.resize(src=frame, dsize=(960, 540))
+                original_image = cv2.resize(
+                    src=original_image, dsize=(960, 540))
                 if applay_delay:
                     frame_cnt += 1
                     if frame_cnt % (frame_period_s * 10) == 0:
@@ -50,7 +53,9 @@ class RealTimeVideoStreamer:
                         print('we can execute lane detector with delay')
                 else:
                     frame = self.lane_detector.laneFinder(frame=frame)
+                    self.lane_detector.prePreoccess(frame=frame,original=original_image)
                     print('we can execute lane detector')
-                cv2.imshow('Lane Detection', frame)
+                cv2.imshow('Original', original_image)
+                # cv2.imshow('Lane Detection', frame)
         cv2.destroyAllWindows()
         self.vidCapture.release()
