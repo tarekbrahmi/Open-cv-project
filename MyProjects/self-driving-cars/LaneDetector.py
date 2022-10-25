@@ -52,8 +52,7 @@ class LaneDetector:
         cv2.fillPoly(mask, vertices, 255)
         # applay the mask to prevent other line (not in regionof intrest) of detection
         new_frame = cv2.bitwise_and(mask, frame)
-        
-        # draw lines of lane
+
         lines = cv2.HoughLinesP(
             new_frame,  # Input edge image
             1,  # Distance resolution in pixels
@@ -62,10 +61,49 @@ class LaneDetector:
             minLineLength=5,  # Min allowed length of line
             maxLineGap=10  # Max allowed gap between line for joining them
         )
-        if len(lines):
-            for points in lines:
-                # Extracted points nested in the list
-                x1, y1, x2, y2 = points[0]
-                # Draw the lines joing the points
-                # On the original image
-                cv2.line(original, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        # draw lines of lane
+        self.draw_lines(lines=lines, original=original)
+
+    def draw_lines(self, lines, original):
+        """
+        draw left or rigth line based in line slope(y=ax+b=> a=(y-b)/x)
+        remove othe unused lines from region of intrest
+            left => slope < 0.2 and slope > -0.8
+            right=> slope > 0.2 and slope < 0.8
+        """
+        left_lines = []
+        right_lines = []
+        if type(lines) != type(None):
+            for line in lines:
+                x1, y1, x2, y2 = line[0]
+                for x1, y1, x2, y2 in line:
+                    slope = (y2-y1)//(x2-x1)
+                    if slope >= 0:
+                        # right
+                        right_lines.append(line)
+                        # cv2.line(original, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    else:
+                        left_lines.append(line)
+                        # cv2.line(original, (x1, y1), (x2, y2), (0, 255, 255), 2)
+
+                    # if slope > 0.2 and slope < 0.8:
+                    #     right_lines.append(line)
+                    #     # print("right line", line)
+                    # if slope < 0.2 and slope > -0.8:
+                    #     left_lines.append(line)
+                    #     # print("left line", line)
+                    # else:
+                    #     print("slope", x1, y1, slope)
+
+        # print(np.average(left_lines, axis=0), np.average(right_lines, axis=0))
+        avg_left, avg_right = np.average(
+            left_lines, axis=0), np.average(right_lines, axis=0)
+        if not np.isnan(avg_right.all()) and avg_right.all():
+            avg_right = avg_right.astype(int)
+            _x1, _y1, _x2, _y2 = tuple(avg_right[0])
+            cv2.line(original, (_x1, _y1), (_x2, _y2), (0, 255, 0), 1)
+        
+        if not np.isnan(avg_left.all()) and avg_left.all():
+            avg_left = avg_left.astype(int)
+            _x1, _y1, _x2, _y2 = tuple(avg_left[0])
+            cv2.line(original, (_x1, _y1), (_x2, _y2), (0, 255, 255), 1)

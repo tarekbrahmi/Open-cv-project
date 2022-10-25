@@ -53,7 +53,7 @@ class RealTimeVideoStreamer:
                         self.lane_detector.laneFinder(
                             frame=frame, original=original_image)
                 else:
-                    print('we can execute lane detector')
+                    # print('we can execute lane detector')
                     self.lane_detector.laneFinder(
                         frame=frame, original=original_image)
                 cv2.imshow('Original', original_image)
