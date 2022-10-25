@@ -49,13 +49,13 @@ class RealTimeVideoStreamer:
                     if frame_cnt % (frame_period_s * 10) == 0:
                         # here we can applay plate finder
                         frame_cnt = 0
-                        frame = self.lane_detector.laneFinder(frame=frame)
+                        frame = self.lane_detector.laneFinder(
+                            frame=frame, original=original_image)
                         print('we can execute lane detector with delay')
                 else:
-                    frame = self.lane_detector.laneFinder(frame=frame)
-                    self.lane_detector.prePreoccess(frame=frame,original=original_image)
                     print('we can execute lane detector')
+                    self.lane_detector.laneFinder(
+                        frame=frame, original=original_image)
                 cv2.imshow('Original', original_image)
-                # cv2.imshow('Lane Detection', frame)
         cv2.destroyAllWindows()
         self.vidCapture.release()

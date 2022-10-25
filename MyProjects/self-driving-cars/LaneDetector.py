@@ -10,7 +10,7 @@ class LaneDetector:
     def __init__(self) -> None:
         pass
 
-    def laneFinder(self, frame):
+    def prePreoccess(self, frame):
         # applay grayscale image
         gray_image = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 
@@ -26,12 +26,36 @@ class LaneDetector:
             src=blur_image, ddepth=cv2.CV_8U, dx=1, dy=0, ksize=3)
         return cv2.Canny(vertical_edges, low_threshold, high_threshold, apertureSize=3)
 
-    def prePreoccess(self, frame,original):
+    def laneFinder(self, frame, original):
         """ 
         find and drow lines in frame
+        Probabilistic Hough Line Transform
         """
+        frame = self.prePreoccess(frame=frame)
+        # black mask
+        mask = np.zeros_like(frame)
+        # polygone point (region of intrest)
+        vertices = np.array(
+            [[(0, 539), (350, 270), (461, 231), (627, 256), (959, 539)]], dtype=np.int32)
+        cv2.circle(img=original, center=(0, 539), radius=1,
+                   color=(0, 0, 255), thickness=2)
+        cv2.circle(img=original, center=(350, 270),
+                   radius=1, color=(0, 0, 255), thickness=2)
+        cv2.circle(img=original, center=(461, 231),
+                   radius=1, color=(0, 0, 255), thickness=2)
+
+        cv2.circle(img=original, center=(627, 256),
+                   radius=1, color=(0, 0, 255), thickness=2)
+        cv2.circle(img=original, center=(959, 539),
+                   radius=1, color=(0, 0, 255), thickness=2)
+
+        cv2.fillPoly(mask, vertices, 255)
+        # applay the mask to prevent other line (not in regionof intrest) of detection
+        new_frame = cv2.bitwise_and(mask, frame)
+        
+        # draw lines of lane
         lines = cv2.HoughLinesP(
-            frame,  # Input edge image
+            new_frame,  # Input edge image
             1,  # Distance resolution in pixels
             np.pi/180,  # Angle resolution in radians
             threshold=100,  # Min number of votes for valid line
