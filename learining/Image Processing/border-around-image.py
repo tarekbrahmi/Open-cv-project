@@ -27,7 +27,6 @@ image = cv2.copyMakeBorder(src=image,
                            left=10,
                            right=10,
                            borderType=cv2.BORDER_CONSTANT,
-                           dst=None,
                            value=0
                            )
 
@@ -41,7 +40,6 @@ image = cv2.copyMakeBorder(src=image,
                            left=image.shape[1],
                            right=image.shape[1],
                            borderType=cv2.BORDER_REFLECT,
-                           dst=None,
                            value=0
                            )
 
@@ -56,7 +54,6 @@ image = cv2.copyMakeBorder(src=image,
                            left=10,
                            right=10,
                            borderType=cv2.BORDER_REPLICATE,
-                           dst=None,
                            value=0
                            )
 
