@@ -9,17 +9,34 @@ HAARCASCADE_PATH = "haarcascade_frontalface_default.xml"
 
 class DistanceCalculator:
     FACE_WIDTH = 0
+    (width, height) = (130, 100)
 
-    def __init__(self) -> None:
+    def __init__(self, face_rec, names) -> None:
         self.face_detector = cv2.CascadeClassifier(HAARCASCADE_PATH)
+        self.model = face_rec.model
+        self.names = names
 
     def face_ref_width(self, original):
         """ detect and draw green rectangle in face"""
         gray_scaled = cv2.cvtColor(src=original, code=cv2.COLOR_BGR2GRAY)
         faces = self.face_detector.detectMultiScale(gray_scaled, 1.3, 5)
+
         for (x, y, h, w) in faces:
-            cv2.rectangle(img=original, pt1=(x, y), pt2=(
-                x+w, y+h), color=GREEN_COLOR, thickness=2)
+            cv2.rectangle(original, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            face = gray_scaled[y:y + h, x:x + w]
+            face_resize = cv2.resize(face, (self.width, self.height))
+            # Try to recognize the face
+            prediction = self.model.predict(face_resize)
+            cv2.rectangle(original, (x, y), (x + w, y + h), (0, 255, 0), 3)
+
+            if prediction[1] < 500:
+                cv2.putText(original, '% s - %.0f' %
+                            (self.names[prediction[0]],
+                             prediction[1]), (x-10, y-10),
+                            cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0))
+            else:
+                cv2.putText(original, 'not recognized',
+                            (x-10, y-10), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0))
             self.FACE_WIDTH = w
 
     def calc_distance(self, original):

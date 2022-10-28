@@ -12,16 +12,14 @@ class FaceRecognizer:
 
     def __init__(self) -> None:
         self.face_cascade = cv2.CascadeClassifier(self.haar_file_path)
-        self.webcam = cv2.VideoCapture(0)
-        self.counter = 0
         self.path = os.path.join(self.datasets_folder_path, self.sub_data)
         if not os.path.isdir(self.path):
             os.mkdir(self.path)
 
-    def train(self):
+    def train(self, images, labels):
         """ train model from dataset"""
-        images, labels = self.proccess()
         self.model = cv2.face.LBPHFaceRecognizer_create()
+        print('labels,images', len(labels), len(images))
         self.model.train(images, labels)
 
     def proccess(self):
@@ -38,12 +36,14 @@ class FaceRecognizer:
                     labels.append(int(label))
                 id += 1
         (images, labels) = [numpy.array(lis) for lis in [images, labels]]
-        return (images, labels)
+        return (images, labels, names)
 
     def preproccess(self):
         """prepare images like dataset"""
-        while self.counter < 30:
-            (_, im) = self.webcam.read()
+        counter = 0
+        webcam = cv2.VideoCapture(0)
+        while counter < 30:
+            (_, im) = webcam.read()
             gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
             faces = self.face_cascade.detectMultiScale(gray, 1.3, 4)
             for (x, y, w, h) in faces:
@@ -51,6 +51,8 @@ class FaceRecognizer:
                 face = gray[y:y + h, x:x + w]
                 face_resize = cv2.resize(face, (self.width, self.height))
                 cv2.imwrite('% s/% s.png' %
-                            (self.path, self.counter), face_resize)
-            self.counter += 1
+                            (self.path, counter), face_resize)
+            counter += 1
             cv2.imshow('OpenCV', im)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
