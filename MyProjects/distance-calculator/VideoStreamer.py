@@ -44,9 +44,10 @@ class RealTimeVideoStreamer:
                     if frame_cnt % (frame_period_s * 10) == 0:
                         frame_cnt = 0
                         print('we can execute distance calculator with delay')
-
+                        self.distance_calculator.calc_distance(original=original_image)
                 else:
                     print('we can execute distance calculator')
+                    self.distance_calculator.calc_distance(original=original_image)
                 cv2.imshow('Original', original_image)
         cv2.destroyAllWindows()
         self.vidCapture.release()
