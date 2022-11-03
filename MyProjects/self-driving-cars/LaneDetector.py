@@ -3,13 +3,10 @@ import numpy as np
 
 
 def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
-    verticle_lines = []  # m=infinity
-    horizontal_lines = []  # m=0
     left_lines = []  # m=+ve
     right_lines = []  # m=-ve
     postiveSlope = 0  # +veSlopeSUM
     negtiveSlope = 0  # -veSlopeSUM
-#     Seperate Left lines & Right Lines
     for line in lines:
         for x1, y1, x2, y2 in line:
             if (y2-y1)/(x2-x1) < 0.2 and (y2-y1)/(x2-x1) > -0.8:
@@ -19,72 +16,82 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
                 right_lines.append(line)
                 negtiveSlope += abs((y2-y1)/(x2-x1))
 
-#    coordinates average left_lanes , right_lanes
-    LL_avg = np.average(left_lines, axis=0)
-#     print('LL_avg',LL_avg)
-    RL_avg = np.average(right_lines, axis=0)
-#     print('RL_avg',RL_avg)
-#    calculate the slope_avg & Intercept_avg for left_lanes , right_lanes
+        for x1_avg, y1_avg, x2_avg, y2_avg in line:
+            x1 = x1_avg
+            y1 = y1_avg
+            x2 = x2_avg
+            y2 = y2_avg
+            LL_slope_avg = (y2 - y1)/(x2 - x1)+1
+            LL_Intercept_avg = y1 - (LL_slope_avg * x1)
+            x1 = x1_avg
+            y1 = y1_avg
+            x2 = x2_avg
+            y2 = y2_avg
+            RL_slope_avg = (y2 - y1)/(x2 - x1)-1
+            RL_Intercept_avg = y1 - (RL_slope_avg * x1)
 
-    for x1_avg, y1_avg, x2_avg, y2_avg in line:
-        x1 = x1_avg
-        y1 = y1_avg
-        x2 = x2_avg
-        y2 = y2_avg
-        LL_slope_avg = (y2 - y1)/(x2 - x1)+1
-        LL_Intercept_avg = y1 - (LL_slope_avg * x1)
-#     for x1_avg,y1_avg,x2_avg,y2_avg in RL_avg:
-        x1 = x1_avg
-        y1 = y1_avg
-        x2 = x2_avg
-        y2 = y2_avg
-        RL_slope_avg = (y2 - y1)/(x2 - x1)-1
-        RL_Intercept_avg = y1 - (RL_slope_avg * x1)
+    min_left_y = find_minimum_y(left_lines)
+     #affecting right line
+    min_left_x = calculate_x(min_left_y, LL_Intercept_avg, LL_slope_avg)
 
-#    Calc the Lowest coordinate for left_lanes & right_lanes using x = (y - b)/m
-    min_left_y = 539  # find_minimum_y(left_lines)
-    # calculate_x(min_left_y, LL_Intercept_avg, LL_slope_avg) #affecting right line
-    min_left_x = 867
+    min_right_y = find_minimum_y(right_lines)
+    min_right_x = calculate_x(min_right_y, RL_Intercept_avg, RL_slope_avg)
 
-    min_right_y = 539  # find_minimum_y(right_lines)
-    # calculate_x(min_right_y, RL_Intercept_avg, RL_slope_avg) # affecting left line..?
-    min_right_x = 165
 
-#    Calc the highest coordinate for left_lanes & right_lanes using x = (y - b)/m
-    max_left_y = 320  # find_maximum_y(left_lines)
-    # calculate_x(max_left_y,LL_Intercept_avg, LL_slope_avg) # affecting right line..?
+    max_left_y = find_maximum_y(left_lines)
     max_left_x = 502
 
-    max_right_y = 320  # find_maximum_y(right_lines)
+    max_right_y = find_maximum_y(right_lines)
     # calculate_x(max_right_y,RL_Intercept_avg, RL_slope_avg)
     max_right_x = 465
 
-    """This function draws `lines` with `color` and `thickness`."""
-
 #   left_lane_lines drawn:  ==================
     cv2.line(img, (min_left_x, min_left_y),
-             (max_left_x, max_left_y), [255, 255, 0], thickness=3)
+             (max_left_x, max_left_y), [255, 255, 0], thickness=thickness)
 #   right_lane_lines drawn  ==================
     cv2.line(img, (min_right_x, min_right_y),
-             (max_right_x, max_right_y), [0, 0, 255], thickness=3)
-
-
-def hough_lines(new_frame, rho, theta, threshold, min_line_len, max_line_gap):
-    lines = cv2.HoughLinesP(new_frame, rho, theta, threshold, np.array(
-        []), minLineLength=min_line_len, maxLineGap=max_line_gap)
-
-    # by using the dimensions of original image, creating a complete Blacked out copy of it.
-    line_img = np.zeros(
-        (new_frame.shape[0], new_frame.shape[1], 3), dtype=np.uint8)
-    # calling the draw_lines function, which will draws lines on
-    # the hough returned coordinates in fully Blacked-out Image.
-    draw_lines(line_img, lines)
-    # this image has connected(line drawn) coordinates in complete Black-out image.
-    return line_img
+             (max_right_x, max_right_y), [0, 0, 255], thickness=thickness)
 
 
 def weighted_img(initial_img, img, α=0.1, β=0.9, λ=0.):
     return cv2.addWeighted(img, α, initial_img, β, λ)
+
+
+def calculate_x(y, intercept, slope):
+    x = ((y-intercept)//slope)
+    return int(x)
+
+
+def find_minimum_y(lane_lines):
+    temp = 960
+    temp1 = 960
+    for line in lane_lines:
+        for _, y1, _, y2 in line:
+            if temp >= y1:
+                temp = y1
+            if temp1 >= y2:
+                temp1 = y2
+    if temp < temp1:
+        min_y = temp
+    else:
+        min_y = temp1
+    return int(min_y)
+
+
+def find_maximum_y(lane_lines):
+    temp = 0
+    temp1 = 0
+    for line in lane_lines:
+        for _, y1, _, y2 in line:
+            if temp <= y1:
+                temp = y1
+            if temp1 <= y2:
+                temp1 = y2
+    if temp > temp1:
+        max_y = temp
+    else:
+        max_y = temp1
+    return int(max_y)
 
 
 class LaneDetector:
@@ -94,6 +101,14 @@ class LaneDetector:
 
     def __init__(self) -> None:
         pass
+
+    def hough_lines(self, new_frame, rho, theta, threshold, min_line_len, max_line_gap):
+        lines = cv2.HoughLinesP(new_frame, rho, theta, threshold, np.array(
+            []), minLineLength=min_line_len, maxLineGap=max_line_gap)
+        line_img = np.zeros(
+            (new_frame.shape[0], new_frame.shape[1], 3), dtype=np.uint8)
+        draw_lines(line_img, lines)
+        return line_img
 
     def prePreoccess(self, frame):
         # applay grayscale image
@@ -143,14 +158,8 @@ class LaneDetector:
         min_line_len = 10
         max_line_gap = 2
         # --> will call draw lines & you get a Blacked-out image with connected Hough returned coordinates.
-        line_img = hough_lines(new_frame, rho, theta,
-                               threshold, min_line_len, max_line_gap)
-
-        '''Now we have
-            1. a image with hough Annotated lines.
-            2. a original image. 
-        this function will give weights to each pixel & glue them together. 
-        Remember, before gluing, the dimension should be same, else it pops out errors.'''
+        line_img = self.hough_lines(new_frame, rho, theta,
+                                    threshold, min_line_len, max_line_gap)
         output = weighted_img(line_img, original, α=0.5, β=1.0, λ=0.)
         cv2.imshow('OUTPUT', output)
 
