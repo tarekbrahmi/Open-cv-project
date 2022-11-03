@@ -28,7 +28,7 @@ from VideoStreamer import RealTimeVideoStreamer
 
 
 if __name__ == "__main__":
-    distance_ref, width_ref, pixels = 12, 3, 20 # en cm
+    distance_ref, width_ref, pixels = 30, 3, 15 # en cm
     distance_calculator = DistanceCalculator(distance_ref, width_ref, pixels)
     RealTimeVideoStreamer(distance_calculator=distance_calculator).execute(
         applay_delay=False)
