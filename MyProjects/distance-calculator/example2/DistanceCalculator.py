@@ -1,5 +1,6 @@
 import imutils
 import cv2
+import numpy as np
 
 
 class DistanceCalculator:
@@ -42,3 +43,8 @@ class DistanceCalculator:
         # applay rectangle max area filter and draw contours
         (x, y), (width, height), angle = self.find_object(original=original)
         print("distance %d" % self._calc_distance(width))
+        box = cv2.boxPoints(((x, y), (width, height), angle))
+        box = np.int0(box)
+        cv2.drawContours(original, [box], -1, (0, 255, 0), 2)
+        cv2.putText(original, "%.2f cm" % (self._calc_distance(
+            width)), (2, 506), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 255, 0), 2)
