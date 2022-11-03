@@ -1,27 +1,5 @@
-import numpy as np
 import imutils
 import cv2
-# helpers
-
-
-def inch2cm(inch_val):
-    """ 1 inch = 2.54 cm"""
-    return inch_val*2.54
-
-
-def cm2inch(cm_val):
-    """ 1 cm = 0.393700787 inch """
-    return cm_val*0.393700787
-
-
-def ft2cm(ft_val):
-    """ 1 ft = 30.48 cm """
-    return ft_val*30.48
-
-
-def cm2ft(cm_val):
-    """ 1 cm = 0.032808399 ft """
-    return cm_val*0.032808399
 
 
 class DistanceCalculator:
